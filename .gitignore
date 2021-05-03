@@ -11,14 +11,11 @@ Cargo.lock
 
 # IDE
 /.idea/
-/whirl.iml
+/bot.iml
 
 # Development
 /src/_*.*
 .env
-
-# Wireshark
-*.pcapng
 
 # Nix
 result*

@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: Automatic merge when required reviews are approved
     conditions:
-      - base=develop
+      - base=main
       - "#approved-reviews-by>=2"
     actions:
       merge:
