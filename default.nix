@@ -1,20 +1,47 @@
-{ system ? builtins.currentSystem }:
+{ sources ? import ./nix/sources.nix, pkgs ? import sources.nixpkgs { } }:
+with pkgs;
 
 let
-  sources = import ./nix/sources.nix;
-  pkgs = import sources.nixpkgs { };
-  bot = import ./bot.nix { inherit sources pkgs; };
+  rust = pkgs.callPackage ./nix/rust.nix { };
 
-  name = "Whirlsplash/bot";
-  tag = "latest";
+  srcNoTarget = dir:
+    builtins.filterSource
+      (path: type: type != "directory" || builtins.baseNameOf path != "target")
+      dir;
 
-in pkgs.dockerTools.buildLayeredImage {
-  inherit name tag;
-  contents = [ bot ];
-
-  config = {
-    Cmd = [ "/bin/bot" ];
-    Env = [ ];
-    WorkingDir = "/";
+  naersk = pkgs.callPackage sources.naersk {
+    rustc = rust;
+    cargo = rust;
   };
+  dhallpkgs = import sources.easy-dhall-nix { inherit pkgs; };
+  src = srcNoTarget ./.;
+
+  bot = naersk.buildPackage {
+    inherit src;
+    doCheck = true;
+    buildInputs = [ ];
+    remapPathPrefix = true;
+  };
+
+  config = stdenv.mkDerivation {
+    pname = "bot-config";
+    version = "HEAD";
+    buildInputs = [ dhallpkgs.dhall-simple ];
+
+#    phases = "installPhase";
+#
+#    installPhase = ''
+#    '';
+  };
+
+in pkgs.stdenv.mkDerivation {
+  inherit (bot) name;
+  inherit src;
+  phases = "installPhase";
+
+  installPhase = ''
+    mkdir -p $out $out/bin
+
+    cp -rf ${bot}/bin/bot $out/bin/bot
+  '';
 }
