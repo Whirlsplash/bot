@@ -2,35 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 mod core;
+mod modules;
 
 use std::{
   collections::{HashMap, HashSet},
   sync::Arc,
 };
 
-use serenity::{
-  framework::{
-    standard::{
-      macros::{command, group},
-      Args,
-      CommandResult,
-    },
-    StandardFramework,
-  },
-  http::Http,
-  model::channel::Message,
-  prelude::*,
-  utils::{content_safe, ContentSafeOptions},
-};
+use modules::commands::*;
+use serenity::{framework::StandardFramework, http::Http, prelude::*};
 
 use crate::core::{
   handler::Handler,
   keys::{CommandCounter, ShardManagerContainer},
 };
-
-#[group]
-#[commands(say)]
-struct General;
 
 #[tokio::main]
 async fn main() {
@@ -81,24 +66,4 @@ async fn main() {
   if let Err(why) = client.start().await {
     println!("error starting client: {:?}", why);
   }
-}
-
-#[command]
-async fn say(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-  let settings = if let Some(guild_id) = msg.guild_id {
-    ContentSafeOptions::default()
-      .clean_channel(false)
-      .display_as_member_from(guild_id)
-  } else {
-    ContentSafeOptions::default()
-      .clean_channel(false)
-      .clean_role(false)
-  };
-
-  let content = content_safe(&ctx.cache, &args.rest(), &settings).await;
-  msg.delete(&ctx.http).await?;
-
-  msg.channel_id.say(&ctx.http, &content).await?;
-
-  Ok(())
 }
