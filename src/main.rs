@@ -19,7 +19,11 @@ use crate::core::{
 
 #[tokio::main]
 async fn main() {
+  // Environment
   dotenv::dotenv().ok();
+
+  // Logging
+  pretty_env_logger::init();
 
   let token = std::env::var("DISCORD_TOKEN").expect("expected a token in the environment");
 
