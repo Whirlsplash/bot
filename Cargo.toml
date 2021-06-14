@@ -17,7 +17,7 @@ publish = false
 serenity = "0.10.7"
 
 # IO
-tokio = { version = "1.6.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.6.1", features = ["macros", "rt-multi-thread"] }
 
 # Environment
 dotenv = "0.15.0"
